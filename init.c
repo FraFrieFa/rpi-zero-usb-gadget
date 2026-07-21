@@ -107,6 +107,12 @@ static long sys_mount(const char *source, const char *target, const char *type,
 }
 
 __attribute__((noinline))
+static void sys_sync(void) {
+    register long r7 asm("r7") = 36;
+    asm volatile("svc #0" : : "r"(r7) : "memory");
+}
+
+__attribute__((noinline))
 static void sys_reboot(void) {
     register long          r7 asm("r7") = 88;
     register unsigned long r0 asm("r0") = 0xfee1dead;
@@ -308,6 +314,8 @@ void _start(void) {
         writestr("mmcblk0 missing\n");
     }
 
+    writestr("syncing\n");
+    sys_sync();
     writestr("rebooting\n");
     sys_reboot();
 
