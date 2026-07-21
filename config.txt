@@ -1,6 +1,6 @@
 enable_uart=1
 arm_64bit=0
-dtoverlay=dwc2,dr_mode=peripheral
 disable_splash=1
 uart_2ndstage=1
 kernel=kernel.img
+device_tree=

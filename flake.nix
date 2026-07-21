@@ -55,6 +55,12 @@
         "^CONFIG_SERIAL_8250_BCM2835AUX=y$"
         "^CONFIG_SERIAL_OF_PLATFORM=y$"
         "^CONFIG_BLK_DEV_INITRD=y$"
+        "^CONFIG_OF=y$"
+        "^CONFIG_OF_FLATTREE=y$"
+        "^CONFIG_OF_EARLY_FLATTREE=y$"
+        "^CONFIG_ARM_APPENDED_DTB=y$"
+        "^CONFIG_ARM_ATAG_DTB_COMPAT=y$"
+        "^CONFIG_ARM_ATAG_DTB_COMPAT_CMDLINE_FROM_BOOTLOADER=y$"
         "^CONFIG_BINFMT_ELF=y$"
         "^CONFIG_BLOCK=y$"
         "^CONFIG_MSDOS_PARTITION=y$"
@@ -90,6 +96,7 @@
           perl
           openssl
           ncurses
+          dtc
           cross.stdenv.cc
         ];
         postPatch = "patchShebangs scripts";
@@ -105,14 +112,23 @@
         buildPhase = ''
           runHook preBuild
           make O=build -j$NIX_BUILD_CORES zImage dtbs
+          cp build/arch/arm/boot/dts/broadcom/bcm2835-rpi-zero-w.dtb build/rpi-zero-gadget.dtb
+          fdtoverlay \
+            -i build/rpi-zero-gadget.dtb \
+            -o build/rpi-zero-gadget.dtb \
+            ${firmwareBoot}/overlays/dwc2.dtbo
+          fdtput -t s build/rpi-zero-gadget.dtb /soc/usb@7e980000 dr_mode peripheral
+          fdtput -t s build/rpi-zero-gadget.dtb /soc/serial@7e201000/bluetooth status disabled
+          cp build/arch/arm/boot/zImage build/zImage
+          cat build/rpi-zero-gadget.dtb >> build/zImage
           runHook postBuild
         '';
         installPhase = ''
           runHook preInstall
           export ARCH=arm
           export CROSS_COMPILE=${cross.stdenv.cc.targetPrefix}
-          install -Dm644 build/arch/arm/boot/zImage $out/kernel.img
-          install -Dm644 build/arch/arm/boot/dts/broadcom/bcm2835-rpi-zero-w.dtb $out/dtbs/bcm2835-rpi-zero-w.dtb
+          install -Dm644 build/zImage $out/kernel.img
+          install -Dm644 build/rpi-zero-gadget.dtb $out/appended.dtb
           install -Dm644 build/.config $out/config
           install -Dm644 build/System.map $out/System.map
           install -Dm755 build/vmlinux $out/vmlinux
@@ -137,9 +153,6 @@
           install -Dm644 ${firmwareBoot}/fixup.dat         $out/fixup.dat
           install -Dm644 ${firmwareBoot}/fixup_cd.dat      $out/fixup_cd.dat
           install -Dm644 ${kernel}/kernel.img              $out/kernel.img
-          install -Dm644 ${kernel}/dtbs/bcm2835-rpi-zero-w.dtb $out/bcm2835-rpi-zero-w.dtb
-          install -Dm644 ${firmwareBoot}/overlays/dwc2.dtbo    $out/overlays/dwc2.dtbo
-          install -Dm644 ${firmwareBoot}/overlays/disable-bt.dtbo $out/overlays/disable-bt.dtbo
           install -Dm644 ${./config.txt}                   $out/config.txt
           install -Dm644 ${./cmdline.txt}                  $out/cmdline.txt
           install -Dm644 ${kernel}/config                  $out/kernel.config

@@ -1,1 +1,1 @@
-console=ttyAMA0,115200 earlycon keep_bootcon ignore_loglevel loglevel=8 lpj=4980736 dhash_entries=512 ihash_entries=512 clk_ignore_unused pd_ignore_unused rdinit=/init
+console=ttyS0,115200 earlycon keep_bootcon ignore_loglevel loglevel=8 lpj=4980736 dhash_entries=512 ihash_entries=512 clk_ignore_unused pd_ignore_unused rdinit=/init

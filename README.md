@@ -5,7 +5,9 @@ booted over USB via [rpiboot](https://github.com/raspberrypi/usbboot).
 
 The Pi boots a tiny custom kernel + initramfs (a freestanding `init` written in
 C, no libc) that exposes the SD card (`/dev/mmcblk0`) as a USB mass-storage
-device using configfs. On eject it reboots.
+device using configfs. The Zero W device tree, with the required USB gadget
+overlay pre-applied, is appended to the kernel image so the rpiboot directory
+does not need separate DTB or overlay files. On eject it reboots.
 
 ## Build
 
@@ -14,7 +16,7 @@ nix build
 ```
 
 The `result` symlink is an rpiboot boot directory (`bootcode.bin`, `start.elf`,
-`kernel.img`, dtb, `config.txt`, `cmdline.txt`, ...).
+`kernel.img`, `config.txt`, `cmdline.txt`, ...).
 
 ## Deploy
 
